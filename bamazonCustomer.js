@@ -34,27 +34,6 @@ function queryAllProducts() {
 }
 
 
-function updateProduct() {
-  console.log("Updating quantities...\n");
-  var query = connection.query(
-    "UPDATE products SET ? WHERE ?",
-    [
-      {
-        stock_quantity: 100
-      },
-      {
-        item_ID: 1
-      }
-    ],
-    function(err, res) {
-      console.log(" products updated!\n");
-      // Call deleteProduct AFTER the UPDATE completes
-      //deleteProduct();
-    }
-  );
-}
-
-
 function IDSearch() {
   inquirer
     .prompt([
@@ -87,7 +66,6 @@ function IDSearch() {
             console.log("You will receive your " + answer.number + " items in the mail.\n");
             console.log("Your total cost will be " + (answer.number * item_price));
             new_stock = items_left - answer.number;
-            console.log("1 " + new_stock +" 2 " + items_left + " 3 " + answer.number);
           }
           else 
           {
@@ -95,9 +73,6 @@ function IDSearch() {
           }
 
           var query = "UPDATE products SET ? WHERE ?";
-
-          var new_stock = items_left - answer.number;
-          console.log("1 " + new_stock +"2 " + items_left + "3 " + answer.number);
           connection.query(query,
             [
               {
@@ -120,9 +95,6 @@ function IDSearch() {
 function Update() {
 
   var query = "UPDATE products SET ? WHERE ?";
-
-  var new_stock = items_left - answer.number;
-  console.log("1 " + new_stock +"2 " + items_left + "3 " + answer.number);
   connection.query(query,
     [
       {
