@@ -20,7 +20,7 @@ connection.connect(function(err) {
   if (err) throw err;
   console.log("connected as id " + connection.threadId + "\n");
   queryAllProducts();
-  updateProduct();
+  //updateProduct();
 });
 
 
@@ -43,7 +43,7 @@ function updateProduct() {
         stock_quantity: 100
       },
       {
-        item_ID: 8
+        item_ID: 1
       }
     ],
     function(err, res) {
@@ -87,6 +87,7 @@ function IDSearch() {
             console.log("You will receive your " + answer.number + " items in the mail.\n");
             console.log("Your total cost will be " + (answer.number * item_price));
             new_stock = items_left - answer.number;
+            console.log("1 " + new_stock +" 2 " + items_left + " 3 " + answer.number);
           }
           else 
           {
@@ -94,6 +95,9 @@ function IDSearch() {
           }
 
           var query = "UPDATE products SET ? WHERE ?";
+
+          var new_stock = items_left - answer.number;
+          console.log("1 " + new_stock +"2 " + items_left + "3 " + answer.number);
           connection.query(query,
             [
               {
@@ -106,14 +110,31 @@ function IDSearch() {
             function(err, res) {
               console.log("My products updated!\n");
             }
-          );
-          console.log("Your products updated!\n");  
+          );  
         }
       );
 
     });
 }
-
+/*
+function Update() {
+  var query = "UPDATE products SET ? WHERE ?";
+  var new_stock = items_left - answer.number;
+  console.log("1 " + new_stock +"2 " + items_left + "3 " + answer.number);
+  connection.query(query,
+    [
+      {
+        stock_quantity: 200
+      },
+      {
+        item_ID: answer.ID
+      }
+    ],
+    function(err, res) {
+      console.log("My products updated!\n");
+    }
+  );  
+}
+*/
 
 IDSearch();
-
