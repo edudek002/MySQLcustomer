@@ -9,11 +9,7 @@ var new_stock;
 var connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
-
-  // Your username
   user: "root",
-
-  // Your password
   password: "",
   database: "bamazon_db"
 });
@@ -35,7 +31,8 @@ function runSearch() {
         "View products for sale",
         "View low inventory",
         "Add to inventory",
-        "Add new product"
+        "Add new product",
+        "Opps, delete last product!"
       ]
     })
     .then(function(answer) {
@@ -53,15 +50,17 @@ function runSearch() {
           break;
 
         case "Add new product":
-          addProduct();
+          addNewProduct();
+          break;
+
+        case "Opps, delete last product!":
+          deleteProduct();
           break;
       }
     });
 }
 
-//view products for sale
-//list every available item
-
+//view all products for sale
 function viewProductsForSale() {
   console.log("-----------------------------------");
   console.log("ALL AVAILABLE ITEMS");
@@ -75,28 +74,78 @@ function viewProductsForSale() {
 }
 
 
-
-//view low inventry
-
+//view low inventry function
 function viewLowInventory() {
-  connection.query("SELECT * FROM products WHERE stock_quantity<5", function(err, res) {
-    for (var i = 0; i < res.length; i++) {
+	console.log("-----------------------------------");
+    connection.query("SELECT * FROM products WHERE stock_quantity<5", function(err, res) {
+    for (var i = 0; i <res.length; i++) {
       console.log("LOW INVENTORY ITEMS");
       console.log();
-      console.log("There are now " + res[i].item_id + " : " + res[i].product_name + " has low inventory of " + res[i].stock_quantity);
+      console.log("The item # " + res[i].item_id + " : " + "'" + res[i].product_name + "'" + " has low inventory of " + res[i].stock_quantity);
     }
     console.log("-----------------------------------");
   });
 }
 
 
-
-//add to inventory
-
-
-
-
+//add more items to inventory
 function addToInventory () {
+	inquirer
+	    .prompt([
+	      {
+	        name: "ID",
+	        type: "input",
+	        message: "What is the ID number of the item you would like to add?\n"
+	      },
+	      {
+	        name: "addNumber",
+	        type: "input",
+	        message: "How many items would you like to add?"
+	      }
+	    ])
+	    .then(function(answer) {
+
+	    	var query = "SELECT item_ID, stock_quantity FROM products WHERE ?";
+            connection.query(query, 
+		        { 
+		      	  item_ID: answer.ID 
+		        }, 
+		        function(err, res) {
+
+		            for (var i = 0; i < res.length; i++) {
+            		items_left=res[i].stock_quantity;
+            		var ID = res[i].item_ID;
+            		console.log("-----------------------------------");
+            		console.log("INFO FOR MANAGER:");
+            		console.log("Before transaction we had " + items_left + " items left with ID = " + res[i].item_ID);
+		            }	
+			    	new_stock = items_left - (-answer.addNumber);
+		            console.log("After transaction we have " + new_stock + " items with ID = " + ID);
+			    	var query = "UPDATE products SET ? WHERE ?";
+			    	console.log("");
+			        connection.query(query, 
+					    [
+			               {
+			                   stock_quantity: new_stock 
+			               },
+			               {
+			                   item_ID: answer.ID
+			               }
+			            ],
+
+				        function(err, res) {
+				          
+				            console.log("Your inventory was updated!");
+				            console.log("-----------------------------------");
+			        	}
+			        );
+				}
+			);
+	    });
+}
+
+//add new product to inventory function
+function addNewProduct () {
 	inquirer
 	    .prompt([
 	      {
@@ -122,8 +171,9 @@ function addToInventory () {
 	    ])
 	    .then(function(answer) {
 
-	    	var query = "INSERT INTO products SET ?";
-            connection.query(query, 
+	    	var query = "INSERT INTO products SET ?, ?, ?, ?";
+            connection.query(query,
+            	[
 		        { 
 		      	  product_name: answer.product 
 		        },
@@ -135,118 +185,35 @@ function addToInventory () {
 		        },
 		        { 
 		      	  stock_quantity: answer.quantity 
-		        },
+		        }
+		        ],
 		        
-
 		        function(err, res) {
+		        	res.lenght=res.length+1;
 		            for (var i = 0; i < res.length; i++) {
-            		items_left=res[i].stock_quantity;
-            		var ID = res[i].item_ID;
-            		console.log("We have " + res[i].product_name + " " + res[i].department_name);
+            		//items_left=res[i].stock_quantity;
+            		//var ID = res[i].item_ID;
+            		console.log("HI");
+      				//console.log(res[i].item_id + " | " + res[i].product_name + " | " + res[i].price + " | " + res[i].stock_quantity);
+            		
 		            }
-	   //////////////////////////////////////////////// 	
-			    	//new_stock = items_left - (-answer.addNumber);
-			    	//new_stock = answer.addNumber + items_left;
-			    	/*
-		            console.log("You now have " + new_stock + " items with ID = " + ID);
-			    	var query = "UPDATE products SET ? WHERE ?";
-			    	console.log("see me");
-			        connection.query(query, 
-					    [
-			               {
-			                   stock_quantity: new_stock 
-			               },
-			               {
-			                   item_ID: answer.ID
-			               }
-			            ],
-
-				        function(err, res) {
-				          
-				            console.log("We have a total of ")// + res[i].stock_quantity + " items left with ID = " + res[i].item_ID);
-			        	}
-			        );
-			    	console.log("Your inventory was updated!");
-			    	*/
+		        console.log("You added a new item!");
 				}
 			);
 	    });
 }
 
 
-//add new product
-/*
-function addProduct() {
-  console.log("Inserting a new product...\n");
-  var query = connection.query(
-    "INSERT INTO products SET ?",
-    {
-      product_name: blouse,
-      department_name: womens,
-      price: 55,
-      stock_quantity: 18
-    },
-    function(err, res) {
-      console.log(" product inserted!\n");
-      // Call updateProduct AFTER the INSERT completes
-    }
-  );
- }
- */
-
-function addProduct () {
-	inquirer
-	    .prompt([
-	      {
-	        name: "ID",
-	        type: "input",
-	        message: "What is the ID number of the item you would like to add?\n"
-	      },
-	      {
-	        name: "addNumber",
-	        type: "input",
-	        message: "How many items woud you like to add?"
-	      }
-	    ])
-	    .then(function(answer) {
-
-	    	var query = "SELECT item_ID, stock_quantity FROM products WHERE ?";
-            connection.query(query, 
-		        { 
-		      	  item_ID: answer.ID 
-		        }, 
-		        function(err, res) {
-		            for (var i = 0; i < res.length; i++) {
-            		items_left=res[i].stock_quantity;
-            		var ID = res[i].item_ID;
-            		console.log("We have " + items_left + " items left with ID = " + res[i].item_ID);
-		            }
-	   //////////////////////////////////////////////// 	
-			    	new_stock = items_left - (-answer.addNumber);
-			    	//new_stock = answer.addNumber + items_left;
-
-		            console.log("You now have " + new_stock + " items with ID = " + ID);
-			    	var query = "UPDATE products SET ? WHERE ?";
-			    	console.log("see me");
-			        connection.query(query, 
-					    [
-			               {
-			                   stock_quantity: new_stock 
-			               },
-			               {
-			                   item_ID: answer.ID
-			               }
-			            ],
-
-				        function(err, res) {
-				          
-				            console.log("We have a total of ")// + res[i].stock_quantity + " items left with ID = " + res[i].item_ID);
-			        	}
-			        );
-			    	console.log("Your inventory was updated!");
-				}
-			);
-	    });
+function deleteProduct() {
+  	console.log("Deleting all items added by the manager...\n");
+  	connection.query(
+    	"DELETE FROM products WHERE item_ID>10",
+   
+    	function(err, res) {
+      	console.log(res.affectedRows + " products deleted!\n");
+    	}
+  	);
 }
 
- 
+
+
