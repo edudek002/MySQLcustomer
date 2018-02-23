@@ -26,37 +26,42 @@ function runSearch() {
     .prompt({
       name: "action",
       type: "list",
-      message: "What would you like to do?",
+      message: "WHAT WOULD YOU LIKE TO DO?",
       choices: [
         "View products for sale",
         "View low inventory",
         "Add to inventory",
         "Add new product",
-        "Opps, delete last product!"
+        "Oops! delete last product",
+        "Exit"
       ]
     })
     .then(function(answer) {
-      switch (answer.action) {
-        case "View products for sale":
-          viewProductsForSale();
-          break;
+      	switch (answer.action) {
+	        case "View products for sale":
+	          viewProductsForSale();
+	          break;
 
-        case "View low inventory":
-          viewLowInventory();
-          break;
+	        case "View low inventory":
+	          viewLowInventory();
+	          break;
 
-        case "Add to inventory":
-          addToInventory();
-          break;
+	        case "Add to inventory":
+	          addToInventory();
+	          break;
 
-        case "Add new product":
-          addNewProduct();
-          break;
+	        case "Add new product":
+	          addNewProduct();
+	          break;
 
-        case "Opps, delete last product!":
-          deleteProduct();
-          break;
-      }
+	        case "Oops! delete last product":
+	          deleteProduct();
+	          break;
+
+	        case "Exit":
+	          exit();
+	          break;
+      	}
     });
 }
 
@@ -69,7 +74,9 @@ function viewProductsForSale() {
       console.log();
       console.log(res[i].item_id + " | " + res[i].product_name + " | " + res[i].price + " | " + res[i].stock_quantity);
     }
-    console.log("-----------------------------------");
+    console.log("End of products.")
+    console.log("-----------------------------------\n");
+  	runSearch();
   });
 }
 
@@ -77,13 +84,21 @@ function viewProductsForSale() {
 //view low inventry function
 function viewLowInventory() {
 	console.log("-----------------------------------");
+	var lowItem=0;
     connection.query("SELECT * FROM products WHERE stock_quantity<5", function(err, res) {
     for (var i = 0; i <res.length; i++) {
-      console.log("LOW INVENTORY ITEMS");
-      console.log();
-      console.log("The item # " + res[i].item_id + " : " + "'" + res[i].product_name + "'" + " has low inventory of " + res[i].stock_quantity);
+      	console.log("LOW INVENTORY ITEMS");
+      	if (lowItem>=res[i].stock_quantity){
+    		console.log("There are no itmes with low inventory.")
+    	}
+    	else {
+      		console.log();
+      		console.log("Item # " + res[i].item_id + " : " + "'" + res[i].product_name + "'" + " has low inventory of " + res[i].stock_quantity);
+    	}
     }
-    console.log("-----------------------------------");
+    
+    console.log("-----------------------------------\n");
+  	runSearch();
   });
 }
 
@@ -119,7 +134,7 @@ function addToInventory () {
             		console.log("INFO FOR MANAGER:");
             		console.log("Before transaction we had " + items_left + " items left with ID = " + res[i].item_ID);
 		            }	
-			    	new_stock = items_left - (-answer.addNumber);
+			    	new_stock = items_left + parseInt(answer.addNumber);
 		            console.log("After transaction we have " + new_stock + " items with ID = " + ID);
 			    	var query = "UPDATE products SET ? WHERE ?";
 			    	console.log("");
@@ -139,6 +154,7 @@ function addToInventory () {
 				            console.log("-----------------------------------");
 			        	}
 			        );
+			    runSearch();
 				}
 			);
 	    });
@@ -166,7 +182,7 @@ function addNewProduct () {
 	      {
 	        name: "quantity",
 	        type: "input",
-	        message: "What is the amount of the item you would like to add?\n"
+	        message: "How many items would you like to add?\n"
 	      }
 	    ])
 	    .then(function(answer) {
@@ -198,6 +214,8 @@ function addNewProduct () {
             		
 		            }
 		        console.log("You added a new item!");
+		        console.log("-----------------------------------\n");
+				runSearch();
 				}
 			);
 	    });
@@ -211,9 +229,30 @@ function deleteProduct() {
    
     	function(err, res) {
       	console.log(res.affectedRows + " products deleted!\n");
+    	console.log("-----------------------------------\n");
+		runSearch();
+    	
     	}
   	);
 }
 
+function exit () {
+	inquirer
+	    .prompt([
+	      {
+	        name: "question",
+	        type: "input",
+	        message: "Do you want to exit? Type 'y' or 'n'.\n"
+	      },
+	    ])
+	    .then(function(answer) {
 
-
+	    	if (answer.question === "n"){
+	    		runSearch();
+	    	}
+            else{
+            	console.log("Good bye!");
+            	return;
+            } 
+		});       
+}

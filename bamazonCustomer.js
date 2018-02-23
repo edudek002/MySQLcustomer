@@ -51,7 +51,7 @@ function IDSearch() {
       }
     ])
     .then(function(answer) {
-      var query = "SELECT item_ID, stock_quantity, price FROM products WHERE ?";
+      var query = "SELECT item_ID, stock_quantity, price, product_sales FROM products WHERE ?";
       connection.query(query, 
         { 
       	  item_ID: answer.ID 
@@ -60,12 +60,15 @@ function IDSearch() {
           for (var i = 0; i < res.length; i++) {
             items_left=res[i].stock_quantity;
             var item_price = res[i].price;
+            total_cost =answer.number * item_price;
+            var initial_sales = res[i].product_sales;
+            var updated_sales = initial_sales + total_cost;
             console.log("\nINFO FOR CUSTOMER:");
             console.log("\nWe have " + items_left + " items left with ID = " + res[i].item_ID);
           }
           if (items_left>=answer.number) {
             console.log("You will receive your " + answer.number + " items in the mail.\n");
-            console.log("Your total cost will be " + (answer.number * item_price) + " dollars.");
+            console.log("Your total cost will be " + total_cost + " dollars.");
             new_stock = items_left - answer.number;
           }
           else 
@@ -73,11 +76,14 @@ function IDSearch() {
             console.log("We are sorry but we have insufficient quantity of this product.")
           }
 
-          var query = "UPDATE products SET ? WHERE ?";
+          var query = "UPDATE products SET ?, ? WHERE ?";
           connection.query(query,
             [
               {
                 stock_quantity: new_stock
+              },
+              {
+                product_sales: updated_sales
               },
               {
                 item_ID: answer.ID
@@ -88,6 +94,8 @@ function IDSearch() {
               console.log("Products are updated!\n");
             }
           );  
+        queryAllProducts();
+        exit();
         }
       );
 
@@ -96,27 +104,26 @@ function IDSearch() {
 
 IDSearch();
 
+function exit () {
+  inquirer
+      .prompt([
+        {
+          name: "question",
+          type: "input",
+          message: "Do you want to buy another item? Type 'y' or 'n'.\n"
+        },
+      ])
+      .then(function(answer) {
 
-//function that will let you update the number of products for given ID 
-/*
-function updateProduct() {
-  console.log("Updating quantities...\n");
-  var query = connection.query(
-    "UPDATE products SET ? WHERE ?",
-    [
-      {
-        stock_quantity: 100
-      },
-      {
-        item_ID: 8
-      }
-    ],
-    function(err, res) {
-      console.log(" products updated!\n");
-      // Call deleteProduct AFTER the UPDATE completes
-      //deleteProduct();
-    }
-  );
+        if (answer.question === "n"){
+          console.log("Thank you for your purchase!");
+          return;
+        }
+        else{
+          IDSearch();    
+        } 
+    });       
 }
-*/
+
+
 
