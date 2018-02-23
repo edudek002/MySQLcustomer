@@ -47,7 +47,7 @@ function IDSearch() {
       {
         name: "number",
         type: "input",
-        message: "How many items woud you like to buy?"
+        message: "How many items would you like to buy?"
       }
     ])
     .then(function(answer) {
@@ -73,9 +73,11 @@ function IDSearch() {
           }
           else 
           {
-            console.log("We are sorry but we have insufficient quantity of this product.")
+            console.log("We are sorry but we have insufficient quantity of this product.");
+            console.log("Try again later!");
+            connection.end();
           }
-
+              
           var query = "UPDATE products SET ?, ? WHERE ?";
           connection.query(query,
             [
@@ -117,7 +119,7 @@ function exit () {
 
         if (answer.question === "n"){
           console.log("Thank you for your purchase!");
-          return;
+          connection.end();
         }
         else{
           IDSearch();    

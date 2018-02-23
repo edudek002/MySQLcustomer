@@ -160,7 +160,7 @@ function exit () {
         }
             else{
               console.log("Good bye!");
-              return;
+              connection.end();
             } 
     });       
 }
